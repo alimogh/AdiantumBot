@@ -6,10 +6,16 @@ bot = telebot.TeleBot(API_TOKEN)
 
 @bot.message_handler(commands=['start', 'help'])
 def send_welcome(message):
-	bot.reply_to(message, "Хай дюд")
+	bot.send_message(message.from_user.id, 
+		"Привет, я могу прислать тебе котенка. Если хочешь - пиши /cat"
+	)
 
-@bot.message_handler(func=lambda message: True)
-def echo_all(message):
-	bot.reply_to(message, message.text)
+@bot.message_handler(commands=['cat'])
+def send_cat(message):
+	cat = open('cat.png', 'rb')
+	bot.send_message(message.from_user.id, 
+		"Нет, лучше посмотри что такое КУБИТ"
+	)
+	bot.send_photo(message.from_user.id, cat)
 
 bot.polling()
