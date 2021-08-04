@@ -1,5 +1,9 @@
 import requests
 import xmltodict
+import os
+import json
+import urllib, http.client
+import hmac, hashlib
 
 class CryptoCurrency:
 
@@ -72,4 +76,38 @@ def get_rate(currency: str, crypto_currency: str) -> CryptoCurrency:
     obj.sell_price *= value
     return obj
 
-# def buy(crypto_currency: str) -> bool:
+def buy(crypto_currency: str) -> bool
+    pass
+
+def call_api(**kwargs):
+    with open('nonce', 'r+') as inp:
+        nonce = int(inp.read())
+        inp.seek(0)
+        inp.write(str(nonce+1))
+        inp.truncate()
+    payload = {'nonce': nonce}
+    if kwargs:
+        payload.update(kwargs)
+    
+
+    API_KEY = '7F9D650D1944A7DA183C09BF06713DC7'
+    API_SECRET = b'e41437a1818fe37962fb282ee82f437b'
+
+    payload =  urllib.parse.urlencode(payload)
+
+    H = hmac.new(key=API_SECRET, digestmod=hashlib.sha512)
+    H.update(payload.encode('utf-8'))
+    sign = H.hexdigest()
+
+    headers = {"Content-type": "application/x-www-form-urlencoded",
+            "Key":API_KEY,
+            "Sign":sign}
+    conn = http.client.HTTPSConnection("yobit.net", timeout=60)
+    conn.request("POST", "/tapi/", payload, headers)
+    response = conn.getresponse().read()
+
+    conn.close()
+
+    obj = json.loads(response.decode('utf-8'))
+
+    return obj
