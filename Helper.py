@@ -76,8 +76,11 @@ def get_rate(currency: str, crypto_currency: str) -> CryptoCurrency:
     obj.sell_price *= value
     return obj
 
-def buy(crypto_currency: str) -> bool
-    pass
+def buy(crypto_currency: str, rate_usd=0, amount=0):
+    print(call_api(method='Trade', pair=crypto_currency + '_btc', type='buy', rate=rate_usd, amount=amount))
+
+def balance():
+    print(call_api(method='getInfo'))
 
 def call_api(**kwargs):
     with open('nonce', 'r+') as inp:
