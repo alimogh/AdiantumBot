@@ -22,10 +22,10 @@ def info(message):
 	t = 2
 	if message != '/info':
 		m = message.text.replace('/info ', '')
-		crypto_currency = m[0] + m[1] + m[2]
-		currency = m[4] + m[5] + m[6]
-		data = get_rate(currency=currency, crypto_currency=crypto_currency)
-		output = """
+		try:
+			crypto_currency, currency = m.split()
+			data = get_rate(currency=currency, crypto_currency=crypto_currency)
+			output = """
 {crypto_currency} -> {currency} 
 Цена покупки: {buy_price} 
 Цена продажи: {sell_price} 
@@ -35,16 +35,18 @@ def info(message):
 Наибольшая цена: {high_price} 
 Наименьшая цена: {low_price} 
 Средняя цена: {avg_price} 
-		""".format(crypto_currency=crypto_currency.upper(), currency=currency.upper(),
-		buy_price=round(data.buy_price, t),
-		sell_price=round(data.sell_price, t),
-		last_price=round(data.last_price, t),
-		vol=round(data.vol, t),
-		vol_cur=round(data.vol_cur, t),
-		high_price=round(data.high_price, t),
-		low_price=round(data.low_price, t),
-		avg_price=round(data.avg_price, t))
-		bot.send_message(message.from_user.id, output)
+			""".format(crypto_currency=crypto_currency.upper(), currency=currency.upper(),
+			buy_price=round(data.buy_price, t),
+			sell_price=round(data.sell_price, t),
+			last_price=round(data.last_price, t),
+			vol=round(data.vol, t),
+			vol_cur=round(data.vol_cur, t),
+			high_price=round(data.high_price, t),
+			low_price=round(data.low_price, t),
+			avg_price=round(data.avg_price, t))
+			bot.send_message(message.from_user.id, output)
+		except:
+			pass
 	
 
 @bot.message_handler(commands=['cat'])
