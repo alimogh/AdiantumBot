@@ -1,0 +1,11 @@
+YoBit Bot v1.0
+
+Bot tasks:
+    - info
+    - buy
+    - sell
+    - trades
+
+Helper tasks:
+    - Yobit net API
+    - Central Russian Federation Back API
