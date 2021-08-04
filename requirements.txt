@@ -5,6 +5,7 @@ attrs==21.2.0
 Babel==2.9.1
 certifi==2021.5.30
 cffi==1.14.5
+cfscrape==2.1.1
 chardet==4.0.0
 click==8.0.1
 colorama==0.4.4
@@ -34,4 +35,6 @@ urllib3==1.26.6
 Werkzeug==2.0.1
 xlrd==1.2.0
 XlsxWriter==1.4.4
+xmltodict==0.12.0
 yarl==1.6.3
+yobit-api==0.1.4
