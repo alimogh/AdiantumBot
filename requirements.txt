@@ -37,4 +37,3 @@ xlrd==1.2.0
 XlsxWriter==1.4.4
 xmltodict==0.12.0
 yarl==1.6.3
-yobit-api==0.1.4
