@@ -45,6 +45,23 @@ def get_rate_usd(crypto_currency: str) -> CryptoCurrency:
         char_code = crypto_currency
     )
 
+def get_currency_list():
+    res = []
+    response = requests.get('https://www.cbr-xml-daily.ru/daily_utf8.xml')
+    data = dict(xmltodict.parse(response.content)['ValCurs'])['Valute']
+    for cur in data:
+        res.append((cur['CharCode'], cur['Name']))
+    return res
+
+def get_crypto_currency_list():
+    res = []
+    response = requests.get(
+        'https://yobit.net/api/3/info/'
+    ).json()['pairs']
+    for pair in response:
+        crypto_currency = pair.split('_', 1)[0]
+        res.append(crypto_currency.upper())
+    return list(set(res))
 
 def get_rate(currency: str, crypto_currency: str) -> CryptoCurrency:
     response = requests.get('https://www.cbr-xml-daily.ru/daily_utf8.xml')
@@ -56,17 +73,16 @@ def get_rate(currency: str, crypto_currency: str) -> CryptoCurrency:
             s = cur['Value']
             s = s.replace(',', '.')
             usd_rub = float(s)
-
     for cur in data:
-        if cur['CharCode'].lower() == currency:
+        if cur['CharCode'].lower() == currency.lower():
             s = cur['Value']
             s = s.replace(',', '.')
             value = float(s)
-    if currency == 'usd':
+    if currency.lower() == 'usd':
         value /= usd_rub
     else:
         value *= usd_rub
-    obj = get_rate_usd(crypto_currency)
+    obj = get_rate_usd(crypto_currency.lower())
     obj.high_price *= value
     obj.low_price *= value
     obj.avg_price *= value
