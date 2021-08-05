@@ -92,11 +92,35 @@ def get_rate(currency: str, crypto_currency: str) -> CryptoCurrency:
     obj.sell_price *= value
     return obj
 
-def buy(crypto_currency: str, rate_usd=0, amount=0):
-    print(call_api(method='Trade', pair=crypto_currency + '_btc', type='buy', rate=rate_usd, amount=amount))
+def trade_buy(crypto_currency: str, amount=0, rate=0):
 
-def balance():
-    print(call_api(method='getInfo'))
+    if rate == 0:
+        # rate = get_rate(btc, usd)
+        pass
+
+    response = call_api(method='Trade', pair=crypto_currency + '_btc', type='buy', rate=rate, amount=amount)
+
+    if response['success'] == '1':
+        try:
+            return True, response['received'], response['remains'], response['funds'], response['order_id']
+        except KeyError:
+            return False, 0, 0, 0, 0
+    return False, 0, 0, 0, 0
+
+def trade_sell(crypto_currency: str, amount=0, rate=0):
+
+    if rate == 0:
+        # rate = get_rate(btc, usd)
+        pass
+
+    response = call_api(method='Trade', pair=crypto_currency + '_btc', type='sell', rate=rate, amount=amount)
+    
+    if response['success'] == '1':
+        try:
+            return True, response['received'], response['remains'], response['funds'], response['order_id']
+        except KeyError:
+            return False, 0, 0, 0, 0
+    return False, 0, 0, 0, 0
 
 def call_api(**kwargs):
     with open('nonce', 'r+') as inp:
@@ -108,7 +132,6 @@ def call_api(**kwargs):
     if kwargs:
         payload.update(kwargs)
     
-
     API_KEY = '7F9D650D1944A7DA183C09BF06713DC7'
     API_SECRET = b'e41437a1818fe37962fb282ee82f437b'
 
@@ -130,3 +153,22 @@ def call_api(**kwargs):
     obj = json.loads(response.decode('utf-8'))
 
     return obj
+
+def balance():
+    response = call_api(method='getInfo')
+
+    funds, funds_incl_orders = 0,  0
+
+    try:
+        funds = response['return']['funds']
+        funds_incl_orders = response['return']['funds_incl_orders']
+    except:
+        pass
+
+    if response['success'] == 1:
+        try:
+            return True, funds, funds_incl_orders, response['return']['transaction_count'], response['return']['open_orders']
+        except KeyError:
+            return False, 0, 0, 0, 0
+    return False, 0, 0, 0, 0
+
