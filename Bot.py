@@ -9,6 +9,7 @@ current = ''
 bot = telebot.TeleBot(API_TOKEN)
 
 buy_a = None
+sell_a = None
 
 @bot.message_handler(commands=['start', 'help'])
 def send_welcome(message):
@@ -25,7 +26,7 @@ def send_welcome(message):
 def info(message):
 	global current
 	current = 'info'
-	bot.send_message(message.from_user.id, "Какая криптовалюта?")
+	bot.send_message(message.from_user.id, "Какая криптовалюта?", reply_markup=types.ReplyKeyboardRemove())
 
 def send_info(message):
 	global crypto_currency, currency
@@ -55,18 +56,24 @@ def send_info(message):
 	except:
 		pass
 
+@bot.message_handler(commands=['sell'])
+def sell(message):
+	global current
+	current = 'sell'
+	bot.send_message(message.from_user.id, "Какая криптовалюта?", reply_markup=types.ReplyKeyboardRemove())
+
 @bot.message_handler(commands=['buy'])
 def buy(message):
 	global current
 	current = 'buy'
-	bot.send_message(message.from_user.id, "Какая криптовалюта?")
+	bot.send_message(message.from_user.id, "Какая криптовалюта?", reply_markup=types.ReplyKeyboardRemove())
 
 @bot.message_handler(commands=['cat'])
 def send_cat(message):
 	global current
 	cat = open('cat.png', 'rb')
 	bot.send_message(message.from_user.id, 
-		"Нет, лучше посмотри что такое КУБИТ"
+		"Нет, лучше посмотри что такое КУБИТ", reply_markup=types.ReplyKeyboardRemove()
 	)
 	bot.send_photo(message.from_user.id, cat, reply_markup=types.ReplyKeyboardRemove())
 
@@ -76,36 +83,52 @@ def transaction(message):
 	global currency
 	global buy_a
 	global sell_a
+	global sell_a
 	global rate
 
-	if buy_a is not None:
+	if buy_a is not None or sell_a is not None:
 		num = float(message.text)
 		success = False
 		received = 0
 		remains = 0
 		funds = 0
-		if buy_a:
-			success, received, remains, funds, order_id = trade_buy(crypto_currency=crypto_currency, amount=num)
-		else:
-			success, received, remains, funds, order_id = trade_buy(crypto_currency=crypto_currency, amount=num, rate=rate)	
+
+		if buy_a is not None:
+			if buy_a:
+				success, received, remains, funds, order_id = trade_buy(crypto_currency=crypto_currency, amount=num)
+			else:
+				success, received, remains, funds, order_id = trade_buy(crypto_currency=crypto_currency, amount=num, rate=rate)	
+
+		if sell_a is not None:
+			if sell_a:
+				success, received, remains, funds, order_id = trade_sell(crypto_currency=crypto_currency, amount=num)
+			else:
+				success, received, remains, funds, order_id = trade_sell(crypto_currency=crypto_currency, amount=num, rate=rate)
 
 		output = ""
 
 		if success:
 			output += "Транзакция прошла успешно \n"
 			output += "ID транзакции: {} \n".format(order_id)
-			output += "Получено: {} {} \n".format(received, crypto_currency.upper())
-			output += "Оставшийся объем: {} {} \n".format(received, crypto_currency.upper())
+			if buy_a is not None:
+				output += "Куплено: {} {} \n".format(received, crypto_currency.upper())
+			else:
+				output += "Продано: {} {} \n".format(received, crypto_currency.upper())
+			output += "Оставшийся объем торгов: {} {} \n".format(received, crypto_currency.upper())
 			output += "Баланс: \n"
 			for name, count in funds:
 				output += " " + name + ": " + str(count) + "\n"
 		else:
 			output += "Ошибка транзакции \n"
-			output += "На счете недостаточно средств \n"
+			if buy_a is not None:
+				output += "На счете недостаточно средств \n"
+			else:
+				output += "На балансе недостаточно криптовалюты \n"
 
-		bot.send_message(message.from_user.id, output)
+		bot.send_message(message.from_user.id, output, reply_markup=types.ReplyKeyboardRemove())
 
 		buy_a = None
+		sell_a = None
 
 		return True
 	return False
@@ -126,14 +149,22 @@ def send(message):
 	# True: Я буду покупать по обычной цене
 	# False: Я хочу попробовать купить по своей цене
 
+	# sell_a
+	# True: Я буду продавать по обычной цене
+	# False: Я хочу попробовать продать по своей цене
+
 	if "/info" not in message.text:
 
+		if message.text == 'Я буду продавать по обычной цене':
+			sell_a = True
+			bot.send_message(message.from_user.id, "Какое количество?", reply_markup=types.ReplyKeyboardRemove())
+			return
 		if message.text == 'Я буду покупать по обычной цене':
 			buy_a = True
-			bot.send_message(message.from_user.id, "Какое количество?")
+			bot.send_message(message.from_user.id, "Какое количество?, reply_markup=types.ReplyKeyboardRemove()")
 			return
-		elif message.text == 'Я хочу попробовать купить по своей цене':
-			bot.send_message(message.from_user.id, 'Какая цена (в долларах)?')
+		elif message.text == 'Я хочу попробовать купить по своей цене' or message.text == 'Я хочу попробовать продать по своей цене':
+			bot.send_message(message.from_user.id, 'Какая цена (в долларах)?', reply_markup=types.ReplyKeyboardRemove())
 			inp = True
 			return
 
@@ -142,7 +173,10 @@ def send(message):
 		else:
 			if inp == True:
 				rate = float(message.text)
-				buy_a = False
+				if buy_a is not None:
+					buy_a = False
+				if sell_a is not None:
+					sell_a = False
 				inp = False
 				transaction(message)
 				return
@@ -153,6 +187,13 @@ def send(message):
 				markup.row(button1)
 				markup.row(button2)
 				bot.send_message(message.from_user.id, "Как будешь покупать?", reply_markup=markup)
+			elif current == 'sell':
+				markup = types.ReplyKeyboardMarkup()
+				button1 = types.KeyboardButton("Я буду продавать по обычной цене")
+				button2 = types.KeyboardButton("Я хочу попробовать продать по своей цене")
+				markup.row(button1)
+				markup.row(button2)
+				bot.send_message(message.from_user.id, "Как будешь продавать?", reply_markup=markup)
 
 		for cur, name in get_currency_list():
 			if message.text == cur + "-" + name:

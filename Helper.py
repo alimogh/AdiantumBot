@@ -46,7 +46,7 @@ def get_rate_usd(crypto_currency: str) -> CryptoCurrency:
     )
 
 def get_currency_list():
-    res = []
+    res = [("RUB", "Российский рубль")]
     response = requests.get('https://www.cbr-xml-daily.ru/daily_utf8.xml')
     data = dict(xmltodict.parse(response.content)['ValCurs'])['Valute']
     for cur in data:
@@ -78,10 +78,7 @@ def get_rate(currency: str, crypto_currency: str) -> CryptoCurrency:
             s = cur['Value']
             s = s.replace(',', '.')
             value = float(s)
-    if currency.lower() == 'usd':
-        value /= usd_rub
-    else:
-        value *= usd_rub
+    value = usd_rub / value
     obj = get_rate_usd(crypto_currency.lower())
     obj.high_price *= value
     obj.low_price *= value
@@ -95,8 +92,7 @@ def get_rate(currency: str, crypto_currency: str) -> CryptoCurrency:
 def trade_buy(crypto_currency: str, amount=0, rate=0):
 
     if rate == 0:
-        # rate = get_rate(btc, usd)
-        pass
+        rate = get_rate(currency='usd', crypto_currency=crypto_currency).buy_price
 
     response = call_api(method='Trade', pair=crypto_currency + '_btc', type='buy', rate=rate, amount=amount)
 
@@ -110,8 +106,7 @@ def trade_buy(crypto_currency: str, amount=0, rate=0):
 def trade_sell(crypto_currency: str, amount=0, rate=0):
 
     if rate == 0:
-        # rate = get_rate(btc, usd)
-        pass
+        rate = get_rate(currency='usd', crypto_currency=crypto_currency).sell_price
 
     response = call_api(method='Trade', pair=crypto_currency + '_btc', type='sell', rate=rate, amount=amount)
     
