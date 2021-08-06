@@ -109,7 +109,7 @@ def buy(message):
 				elif USER_SECRET is None:
 					USER_SECRET = str(line.split(':', 1)[1])
 		USER_KEY = USER_KEY[:-1]
-		USER_SECRET = USER_SECRET[1:]
+		USER_SECRET = USER_SECRET[:-1]
 		print(USER_KEY, USER_SECRET)
 		if USER_KEY is None or USER_SECRET is None:
 			bot.send_message(message.from_user.id, "Мне нужен твои ключи биржы YoBit.net")
