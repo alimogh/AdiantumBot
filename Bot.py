@@ -69,20 +69,26 @@ def sell(message):
 	global USER_KEY
 	global USER_SECRET
 
-	data = open("database.txt", 'r').readlines()
-	for line in data:
-		if str(message.from_user.id) in line:
-			if USER_KEY is None:
-				USER_KEY = str(line.split(':', 1)[1])
-			elif USER_SECRET is None:
-				USER_SECRET = str(line.split(':', 1)[1])
-
 	if USER_KEY is None or USER_SECRET is None:
-		bot.send_message(message.from_user.id, "Мне нужен твои ключи биржы YoBit.net")
-		bot.send_message(message.from_user.id, "Раздел 'API ключи' в личном кабинете. \n Нужно сгенерировать ключ с правами 'info & trade & deposits' и отправить их мне через пробел")
-		bot.send_message(message.from_user.id, "Пример: fe4riuh34iu34rh3i4ruhf34iuhg 239fj85r9jef98u4439p8ij6g5978")
-		inp_token = True
-		return
+		data = open("database.txt", 'r').readlines()
+		for line in data:
+			if str(message.from_user.id) in line:
+				if USER_KEY is None:
+					USER_KEY = str(line.split(':', 1)[1])
+				elif USER_SECRET is None:
+					USER_SECRET = str(line.split(':', 1)[1])
+		USER_KEY = USER_KEY[:-1]
+		USER_SECRET = USER_SECRET[:-1]
+		print(USER_KEY, USER_SECRET)
+		if USER_KEY is None or USER_SECRET is None:
+			bot.send_message(message.from_user.id, "Мне нужен твои ключи биржы YoBit.net")
+			bot.send_message(message.from_user.id, "Раздел 'API ключи' в личном кабинете. \n Нужно сгенерировать ключ с правами 'info & trade & deposits' и отправить их мне через пробел")
+			bot.send_message(message.from_user.id, "Пример: fe4riuh34iu34rh3i4ruhf34iuhg 239fj85r9jef98u4439p8ij6g5978")
+			inp_token = True
+			return
+		else:
+			setup(USER_KEY, USER_SECRET)
+	setup(USER_KEY, USER_SECRET)
 	global current
 	current = 'sell'
 	bot.send_message(message.from_user.id, "Какая криптовалюта?", reply_markup=types.ReplyKeyboardRemove())
@@ -90,12 +96,30 @@ def sell(message):
 @bot.message_handler(commands=['buy'])
 def buy(message):
 	global inp_token
+	global USER_KEY
+	global USER_SECRET
+
+	
 	if USER_KEY is None or USER_SECRET is None:
-		bot.send_message(message.from_user.id, "Мне нужен твои ключи биржы YoBit.net")
-		bot.send_message(message.from_user.id, "Раздел 'API ключи' в личном кабинете. \n Нужно сгенерировать ключ с правами 'info & trade & deposits' и отправить их мне через пробел")
-		bot.send_message(message.from_user.id, "Пример: fe4riuh34iu34rh3i4ruhf34iuhg 239fj85r9jef98u4439p8ij6g5978")
-		inp_token = True
-		return
+		data = open("database.txt", 'r').readlines()
+		for line in data:
+			if str(message.from_user.id) in line:
+				if USER_KEY is None:
+					USER_KEY = str(line.split(':', 1)[1])
+				elif USER_SECRET is None:
+					USER_SECRET = str(line.split(':', 1)[1])
+		USER_KEY = USER_KEY[:-1]
+		USER_SECRET = USER_SECRET[1:]
+		print(USER_KEY, USER_SECRET)
+		if USER_KEY is None or USER_SECRET is None:
+			bot.send_message(message.from_user.id, "Мне нужен твои ключи биржы YoBit.net")
+			bot.send_message(message.from_user.id, "Раздел 'API ключи' в личном кабинете. \n Нужно сгенерировать ключ с правами 'info & trade & deposits' и отправить их мне через пробел")
+			bot.send_message(message.from_user.id, "Пример: fe4riuh34iu34rh3i4ruhf34iuhg 239fj85r9jef98u4439p8ij6g5978")
+			inp_token = True
+			return
+		else:
+			setup(USER_KEY, USER_SECRET)
+	setup(USER_KEY, USER_SECRET)
 	global current
 	current = 'buy'
 	bot.send_message(message.from_user.id, "Какая криптовалюта?", reply_markup=types.ReplyKeyboardRemove())
@@ -210,6 +234,7 @@ def send(message):
 			setup(USER_KEY, USER_SECRET)
 			try:
 				response = balance()
+				print(response)
 				success, funds, funds_incl_orders, transaction_count, open_orders = response
 				if success:
 					bot.send_message(message.from_user.id, "Успешная авторизация") 
@@ -218,19 +243,19 @@ def send(message):
 						f.write("{}:{}\n".format(str(message.from_user.id), str(USER_SECRET))) 
 					output = ""
 					if type(funds) is not int:
-						output += "Баланс: \n"
-						for name, count in funds:
-							output += " " + name + ": " + str(count) + "\n"
+						output += "Баланс: (включая торги) \n"
+						print(type(funds_incl_orders))
+						print(funds)
+						for name, count in funds.items():
+							output += "-" + name.upper() + ": " + str(count) + "\n"
 					else:
 						output += "Баланс: 0\n"
 					bot.send_message(message.from_user.id, output)
-					inp_token = False
 				else:
 					bot.send_message(message.from_user.id, "Ошибка авторизации - Несуществуюшие ключи")
-					inp_token = True
 			except:
 				bot.send_message(message.from_user.id, "Ошибка авторизации - Несуществуюшие ключи")
-				inp_token = True
+			inp_token = False
 			
 
 		if message.text == 'Я буду продавать по обычной цене':

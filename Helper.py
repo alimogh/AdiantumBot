@@ -33,6 +33,7 @@ def get_rate_usd(crypto_currency: str) -> CryptoCurrency:
         'https://yobit.net/api/3/ticker/' + 
         crypto_currency + '_usd'
     ).json()[crypto_currency + '_usd']
+
     return CryptoCurrency(
         high_price = response['high'],
         low_price = response['low'],
@@ -110,6 +111,8 @@ def trade_sell(crypto_currency: str, amount=0, rate=0):
 
     response = call_api(method='Trade', pair=crypto_currency + '_btc', type='sell', rate=rate, amount=amount)
     
+    print("sell response:", response)
+
     if response['success'] == '1':
         try:
             return True, response['received'], response['remains'], response['funds'], response['order_id']
@@ -166,6 +169,8 @@ def call_api(**kwargs):
 
 def balance():
     response = call_api(method='getInfo')
+
+    print(response)
 
     funds, funds_incl_orders = 0,  0
 
