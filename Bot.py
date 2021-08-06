@@ -147,20 +147,20 @@ def send(message):
 				buy_a = False
 				inp = False
 				transaction(message)
-				return 
-			markup = types.ReplyKeyboardMarkup()
-			button1 = types.KeyboardButton("Я буду покупать по обычной цене")
-			button2 = types.KeyboardButton("Я хочу попробовать купить по своей цене")
-			markup.row(button1)
-			markup.row(button2)
-			bot.send_message(message.from_user.id, "Как будешь покупать?", reply_markup=markup)
-
+				return
+			if current == 'buy':
+				markup = types.ReplyKeyboardMarkup()
+				button1 = types.KeyboardButton("Я буду покупать по обычной цене")
+				button2 = types.KeyboardButton("Я хочу попробовать купить по своей цене")
+				markup.row(button1)
+				markup.row(button2)
+				bot.send_message(message.from_user.id, "Как будешь покупать?", reply_markup=markup)
 
 		for cur, name in get_currency_list():
 			if message.text == cur + "-" + name:
 				currency = message.text.split('-', 1)[0]
 				if current == 'info':
-					main(message)
+					send_info(message)
 				return
 
 		try:
