@@ -65,6 +65,17 @@ def send_info(message):
 @bot.message_handler(commands=['sell'])
 def sell(message):
 	global inp_token
+	global USER_KEY
+	global USER_SECRET
+
+	data = open("database.txt", 'r').readlines()
+	for line in data:
+		if str(message.from_user.id) in line:
+			if USER_KEY is None:
+				USER_KEY = str(line.split(':', 1)[1])
+			elif USER_SECRET is None:
+				USER_SECRET = str(line.split(':', 1)[1])
+
 	if USER_KEY is None or USER_SECRET is None:
 		bot.send_message(message.from_user.id, "Мне нужен твои ключи биржы YoBit.net")
 		bot.send_message(message.from_user.id, "Раздел 'API ключи' в личном кабинете. \n Нужно сгенерировать ключ с правами 'info & trade & deposits' и отправить их мне через пробел")
