@@ -117,7 +117,16 @@ def trade_sell(crypto_currency: str, amount=0, rate=0):
             return False, 0, 0, 0, 0
     return False, 0, 0, 0, 0
 
+API_KEY = None
+API_SECRET = None
+
+def setup(USER_KEY, USER_SECRET):
+    global API_KEY, API_SECRET
+    API_KEY = USER_KEY
+    API_SECRET = USER_SECRET
+
 def call_api(**kwargs):
+    global API_KEY, API_SECRET
     with open('nonce', 'r+') as inp:
         nonce = int(inp.read())
         inp.seek(0)
@@ -127,10 +136,16 @@ def call_api(**kwargs):
     if kwargs:
         payload.update(kwargs)
     
-    API_KEY = '7F9D650D1944A7DA183C09BF06713DC7'
-    API_SECRET = b'e41437a1818fe37962fb282ee82f437b'
+    # TESTS:
+    # API_KEY = 7F9D650D1944A7DA183C09BF06713DC7
+    # API_SECRET = e41437a1818fe37962fb282ee82f437b
 
-    payload =  urllib.parse.urlencode(payload)
+    if type(API_SECRET) is not bytes:
+        API_SECRET = bytes(API_SECRET, "utf8")
+
+    print(API_KEY, API_SECRET)
+
+    payload = urllib.parse.urlencode(payload)
 
     H = hmac.new(key=API_SECRET, digestmod=hashlib.sha512)
     H.update(payload.encode('utf-8'))
