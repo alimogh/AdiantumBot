@@ -64,8 +64,6 @@ def buy(message):
 @bot.message_handler(commands=['cat'])
 def send_cat(message):
 	global current
-	print(message.from_user.id)
-	current = 'cat'
 	cat = open('cat.png', 'rb')
 	bot.send_message(message.from_user.id, 
 		"Нет, лучше посмотри что такое КУБИТ"
