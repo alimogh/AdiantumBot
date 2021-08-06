@@ -30,7 +30,8 @@ def send_welcome(message):
 
 @bot.message_handler(commands=['info'])
 def info(message):
-	global current
+	global current, inp_token
+	inp_token = False
 	current = 'info'
 	bot.send_message(message.from_user.id, "Какая криптовалюта?", reply_markup=types.ReplyKeyboardRemove())
 
@@ -101,7 +102,8 @@ def buy(message):
 
 @bot.message_handler(commands=['cat'])
 def send_cat(message):
-	global current
+	global currentinp_token
+	inp_token = False
 	cat = open('cat.png', 'rb')
 	bot.send_message(message.from_user.id, 
 		"Нет, лучше посмотри что такое КУБИТ", reply_markup=types.ReplyKeyboardRemove()
