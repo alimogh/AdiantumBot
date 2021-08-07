@@ -3,7 +3,7 @@ from telebot import types
 from Helper import *
 import json
 
-API_TOKEN = '1949911063:AAF-IxP5jIwNFAIG_Pr_9o5VnDvawvUlq5Y'
+API_TOKEN = '1835385067:AAGYEloqe-xMNzKftsnO4oYseS9zizJzELQ'
 
 USER_KEY = None
 USER_SECRET = None
@@ -20,9 +20,11 @@ inp_token = False
 @bot.message_handler(commands=['start', 'help'])
 def send_welcome(message):
 	output = """
-Привет, я могу прислать тебе котенка.
-Если хочешь - пиши /cat \n
-Еще могу прислать курс криптовалюты в выбранной тобой валюте - пиши /info \n
+Привет, вот что я могу: \n
+/info - Получить курс криптовалюты
+/buy - Купить криптовалюту
+/sell - Продать криптовалюту
+/help - Вывод комманд
 	"""
 	bot.send_message(message.from_user.id, 
 		output, reply_markup=types.ReplyKeyboardRemove()
@@ -33,7 +35,7 @@ def info(message):
 	global current, inp_token
 	inp_token = False
 	current = 'info'
-	bot.send_message(message.from_user.id, "Какая криптовалюта?", reply_markup=types.ReplyKeyboardRemove())
+	bot.send_message(message.from_user.id, "Какая криптовалюта? \nПример: btc", reply_markup=types.ReplyKeyboardRemove())
 
 def send_info(message):
 	global crypto_currency, currency
@@ -91,7 +93,7 @@ def sell(message):
 	setup(USER_KEY, USER_SECRET)
 	global current
 	current = 'sell'
-	bot.send_message(message.from_user.id, "Какая криптовалюта?", reply_markup=types.ReplyKeyboardRemove())
+	bot.send_message(message.from_user.id, "Какая криптовалюта? \nПример: btc", reply_markup=types.ReplyKeyboardRemove())
 
 @bot.message_handler(commands=['buy'])
 def buy(message):
@@ -122,17 +124,7 @@ def buy(message):
 	setup(USER_KEY, USER_SECRET)
 	global current
 	current = 'buy'
-	bot.send_message(message.from_user.id, "Какая криптовалюта?", reply_markup=types.ReplyKeyboardRemove())
-
-@bot.message_handler(commands=['cat'])
-def send_cat(message):
-	global currentinp_token
-	inp_token = False
-	cat = open('cat.png', 'rb')
-	bot.send_message(message.from_user.id, 
-		"Нет, лучше посмотри что такое КУБИТ", reply_markup=types.ReplyKeyboardRemove()
-	)
-	bot.send_photo(message.from_user.id, cat, reply_markup=types.ReplyKeyboardRemove())
+	bot.send_message(message.from_user.id, "Какая криптовалюта? \nПример: btc", reply_markup=types.ReplyKeyboardRemove())
 
 def transaction(message):
 
