@@ -223,8 +223,11 @@ def send(message):
 			return
 
 		if inp_token:
-			USER_KEY, USER_SECRET = message.text.split()
-			setup(USER_KEY, USER_SECRET)
+			try:
+				USER_KEY, USER_SECRET = message.text.split()
+				setup(USER_KEY, USER_SECRET)
+			except:
+				pass
 			try:
 				response = balance()
 				print(response)
