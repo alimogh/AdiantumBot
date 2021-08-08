@@ -5,9 +5,6 @@ import json
 
 API_TOKEN = '1835385067:AAGYEloqe-xMNzKftsnO4oYseS9zizJzELQ'
 
-USER_KEY = None
-USER_SECRET = None
-
 current = ''
 
 bot = telebot.TeleBot(API_TOKEN)
@@ -16,6 +13,19 @@ buy_a = None
 sell_a = None
 
 inp_token = False
+
+def get_user_keys(message):
+	data = open("database.txt", 'r').readlines()
+	USER_KEY = ""
+	USER_SECRET = ""
+	for line in data:
+		if str(message.from_user.id) in line:
+			if USER_KEY == "":
+				USER_KEY = str(line.split(':', 1)[1])[:-1]
+			else:
+				USER_SECRET = str(line.split(':', 1)[1])[:-1]
+	print(message.from_user.username, USER_KEY, USER_SECRET)
+	return USER_KEY, USER_SECRET
 
 @bot.message_handler(commands=['start', 'help'])
 def send_welcome(message):
@@ -26,9 +36,16 @@ def send_welcome(message):
 /sell - Продать криптовалюту
 /help - Вывод комманд
 	"""
-	bot.send_message(message.from_user.id, 
+	bot.send_message(message.from_user.id,
 		output, reply_markup=types.ReplyKeyboardRemove()
 	)
+
+	USER_KEY, USER_SECRET = get_user_keys(message)
+
+	if USER_KEY == "" and USER_SECRET == "":
+		with open("database.txt", "a") as f:
+			f.write("{}:{}\n".format(str(message.from_user.id), ""))
+			f.write("{}:{}\n".format(str(message.from_user.id), ""))
 
 @bot.message_handler(commands=['info'])
 def info(message):
@@ -43,15 +60,15 @@ def send_info(message):
 	try:
 		data = get_rate(currency=currency, crypto_currency=crypto_currency)
 		output = """
-{crypto_currency} -> {currency} 
-Цена покупки: {buy_price} 
-Цена продажи: {sell_price} 
-Цена последней сделки: {last_price} 
-Объем торгов в {crypto_currency}: {vol_cur} 
-Объем торгов в {currency}: {vol} 
-Наибольшая цена: {high_price} 
-Наименьшая цена: {low_price} 
-Средняя цена: {avg_price} 
+{crypto_currency} -> {currency}
+Цена покупки: {buy_price}
+Цена продажи: {sell_price}
+Цена последней сделки: {last_price}
+Объем торгов в {crypto_currency}: {vol_cur}
+Объем торгов в {currency}: {vol}
+Наибольшая цена: {high_price}
+Наименьшая цена: {low_price}
+Средняя цена: {avg_price}
 		""".format(crypto_currency=crypto_currency.upper(), currency=currency.upper(),
 		buy_price=round(data.buy_price, t),
 		sell_price=round(data.sell_price, t),
@@ -68,21 +85,9 @@ def send_info(message):
 @bot.message_handler(commands=['sell'])
 def sell(message):
 	global inp_token
-	global USER_KEY
-	global USER_SECRET
-
-	if USER_KEY is None or USER_SECRET is None:
-		data = open("database.txt", 'r').readlines()
-		for line in data:
-			if str(message.from_user.id) in line:
-				if USER_KEY is None:
-					USER_KEY = str(line.split(':', 1)[1])
-				elif USER_SECRET is None:
-					USER_SECRET = str(line.split(':', 1)[1])
-		USER_KEY = USER_KEY[:-1]
-		USER_SECRET = USER_SECRET[:-1]
-		print(USER_KEY, USER_SECRET)
-		if USER_KEY is None or USER_SECRET is None:
+	try:
+		USER_KEY, USER_SECRET = get_user_keys(message)
+		if USER_KEY == "" or USER_SECRET == "":
 			bot.send_message(message.from_user.id, "Мне нужен твои ключи биржы YoBit.net")
 			bot.send_message(message.from_user.id, "Раздел 'API ключи' в личном кабинете. \n Нужно сгенерировать ключ с правами 'info & trade & deposits' и отправить их мне через пробел")
 			bot.send_message(message.from_user.id, "Пример: fe4riuh34iu34rh3i4ruhf34iuhg 239fj85r9jef98u4439p8ij6g5978")
@@ -90,7 +95,11 @@ def sell(message):
 			return
 		else:
 			setup(USER_KEY, USER_SECRET)
-	setup(USER_KEY, USER_SECRET)
+	except:
+		bot.send_message(message.from_user.id, "Мне нужен твои ключи биржы YoBit.net")
+		bot.send_message(message.from_user.id, "Раздел 'API ключи' в личном кабинете. \n Нужно сгенерировать ключ с правами 'info & trade & deposits' и отправить их мне через пробел")
+		bot.send_message(message.from_user.id, "Пример: fe4riuh34iu34rh3i4ruhf34iuhg 239fj85r9jef98u4439p8ij6g5978")
+		return
 	global current
 	current = 'sell'
 	bot.send_message(message.from_user.id, "Какая криптовалюта? \nПример: btc", reply_markup=types.ReplyKeyboardRemove())
@@ -98,23 +107,9 @@ def sell(message):
 @bot.message_handler(commands=['buy'])
 def buy(message):
 	global inp_token
-	global USER_KEY
-	global USER_SECRET
-
-	
-	if USER_KEY is None or USER_SECRET is None:
-		data = open("database.txt", 'r').readlines()
-		for line in data:
-			if str(message.from_user.id) in line:
-				if USER_KEY is None:
-					USER_KEY = str(line.split(':', 1)[1])
-				elif USER_SECRET is None:
-					USER_SECRET = str(line.split(':', 1)[1])
-		if USER_KEY is not None and USER_SECRET is not None:
-			USER_KEY = USER_KEY[:-1]
-			USER_SECRET = USER_SECRET[:-1]
-			print(USER_KEY, USER_SECRET)
-		if USER_KEY is None or USER_SECRET is None:
+	try:
+		USER_KEY, USER_SECRET = get_user_keys(message)
+		if USER_KEY == "" or USER_SECRET == "":
 			bot.send_message(message.from_user.id, "Мне нужен твои ключи биржы YoBit.net")
 			bot.send_message(message.from_user.id, "Раздел 'API ключи' в личном кабинете. \n Нужно сгенерировать ключ с правами 'info & trade & deposits' и отправить их мне через пробел")
 			bot.send_message(message.from_user.id, "Пример: fe4riuh34iu34rh3i4ruhf34iuhg 239fj85r9jef98u4439p8ij6g5978")
@@ -122,7 +117,11 @@ def buy(message):
 			return
 		else:
 			setup(USER_KEY, USER_SECRET)
-	setup(USER_KEY, USER_SECRET)
+	except:
+		bot.send_message(message.from_user.id, "Мне нужен твои ключи биржы YoBit.net")
+		bot.send_message(message.from_user.id, "Раздел 'API ключи' в личном кабинете. \n Нужно сгенерировать ключ с правами 'info & trade & deposits' и отправить их мне через пробел")
+		bot.send_message(message.from_user.id, "Пример: fe4riuh34iu34rh3i4ruhf34iuhg 239fj85r9jef98u4439p8ij6g5978")
+		return
 	global current
 	current = 'buy'
 	bot.send_message(message.from_user.id, "Какая криптовалюта? \nПример: btc", reply_markup=types.ReplyKeyboardRemove())
@@ -137,8 +136,6 @@ def transaction(message):
 	global rate
 	global num
 
-	print(buy_a, sell_a)
-
 	if buy_a is not None or sell_a is not None:
 		success = False
 		received = 0
@@ -149,7 +146,7 @@ def transaction(message):
 			if buy_a:
 				success, received, remains, funds, order_id = trade_buy(crypto_currency=crypto_currency, amount=num)
 			else:
-				success, received, remains, funds, order_id = trade_buy(crypto_currency=crypto_currency, amount=num, rate=rate)	
+				success, received, remains, funds, order_id = trade_buy(crypto_currency=crypto_currency, amount=num, rate=rate)
 
 		if sell_a is not None:
 			if sell_a:
@@ -159,7 +156,7 @@ def transaction(message):
 
 		output = ""
 
-		print(success, received, remains, funds, order_id)
+		print(message.from_user.username, success, received, remains, funds, order_id)
 
 		if success:
 			output += "Транзакция прошла успешно \n"
@@ -202,7 +199,6 @@ def send(message):
 	global rate
 	global inp
 	global inp_token
-	global USER_KEY, USER_SECRET
 	global inp_num
 	global num
 
@@ -230,18 +226,16 @@ def send(message):
 				pass
 			try:
 				response = balance()
-				print(response)
+				print(message.from_user.username, response)
 				success, funds, funds_incl_orders, transaction_count, open_orders = response
 				if success:
-					bot.send_message(message.from_user.id, "Успешная авторизация") 
+					bot.send_message(message.from_user.id, "Успешная авторизация")
 					with open('database.txt', 'w') as f:
 						f.write("{}:{}\n".format(str(message.from_user.id), str(USER_KEY)))
-						f.write("{}:{}\n".format(str(message.from_user.id), str(USER_SECRET))) 
+						f.write("{}:{}\n".format(str(message.from_user.id), str(USER_SECRET)))
 					output = ""
 					if type(funds) is not int:
 						output += "Баланс: (включая торги) \n"
-						print(type(funds_incl_orders))
-						print(funds)
 						for name, count in funds.items():
 							output += "-" + name.upper() + ": " + str(count) + "\n"
 					else:
@@ -252,7 +246,7 @@ def send(message):
 			except:
 				bot.send_message(message.from_user.id, "Ошибка авторизации - Несуществуюшие ключи")
 			inp_token = False
-			
+
 
 		if message.text == 'Я буду продавать по обычной цене':
 			sell_a = True

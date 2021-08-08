@@ -7,7 +7,7 @@ import hmac, hashlib
 
 class CryptoCurrency:
 
-    def __init__(self, 
+    def __init__(self,
                  high_price,
                  low_price,
                  avg_price,
@@ -30,7 +30,7 @@ class CryptoCurrency:
 
 def get_rate_usd(crypto_currency: str) -> CryptoCurrency:
     response = requests.get(
-        'https://yobit.net/api/3/ticker/' + 
+        'https://yobit.net/api/3/ticker/' +
         crypto_currency + '_usd'
     ).json()[crypto_currency + '_usd']
 
@@ -110,8 +110,6 @@ def trade_sell(crypto_currency: str, amount=0, rate=0):
         rate = get_rate(currency='usd', crypto_currency=crypto_currency).sell_price
 
     response = call_api(method='Trade', pair=crypto_currency + '_btc', type='sell', rate=rate, amount=amount)
-    
-    print("sell response:", response)
 
     if response['success'] == '1':
         try:
@@ -138,15 +136,13 @@ def call_api(**kwargs):
     payload = {'nonce': nonce}
     if kwargs:
         payload.update(kwargs)
-    
+
     # TESTS:
     # API_KEY = 7F9D650D1944A7DA183C09BF06713DC7
     # API_SECRET = e41437a1818fe37962fb282ee82f437b
 
     if type(API_SECRET) is not bytes:
         API_SECRET = bytes(API_SECRET, "utf8")
-
-    print(API_KEY, API_SECRET)
 
     payload = urllib.parse.urlencode(payload)
 
@@ -170,8 +166,6 @@ def call_api(**kwargs):
 def balance():
     response = call_api(method='getInfo')
 
-    print(response)
-
     funds, funds_incl_orders = 0,  0
 
     try:
@@ -186,4 +180,3 @@ def balance():
         except KeyError:
             return False, 0, 0, 0, 0
     return False, 0, 0, 0, 0
-
